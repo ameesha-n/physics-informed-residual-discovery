@@ -8,17 +8,15 @@ from losses import burgers_residual
 
 model = PINN()
 
-# Learnable PDE coefficient
 alpha = torch.nn.Parameter(
     torch.tensor(0.0)
 )
 
-# Learnable loss weights
-s_data = torch.nn.Parameter(
+raw_data = torch.nn.Parameter(
     torch.tensor(0.0)
 )
 
-s_physics = torch.nn.Parameter(
+raw_physics = torch.nn.Parameter(
     torch.tensor(0.0)
 )
 
@@ -26,8 +24,8 @@ optimizer = torch.optim.Adam(
     list(model.parameters())
     + [
         alpha,
-        s_data,
-        s_physics
+        raw_data,
+        raw_physics
     ],
     lr=1e-3
 )
@@ -60,19 +58,27 @@ for epoch in range(5000):
 
     )
 
+    lambda_data = (
+        0.1
+        + 9.9
+        * torch.sigmoid(raw_data)
+    )
+
+    lambda_physics = (
+        0.1
+        + 9.9
+        * torch.sigmoid(raw_physics)
+    )
+
     loss = (
 
-        torch.exp(-s_data)
+        lambda_data
         * data_loss
-
-        + s_data
 
         +
 
-        torch.exp(-s_physics)
+        lambda_physics
         * physics_loss
-
-        + s_physics
 
     )
 
@@ -82,32 +88,22 @@ for epoch in range(5000):
 
     if epoch % 500 == 0:
 
-        lambda_data = torch.exp(
-            -s_data
-        ).item()
-
-        lambda_physics = torch.exp(
-            -s_physics
-        ).item()
-
         print(
             f"Epoch {epoch:5d}",
             f"Loss={loss.item():.8f}",
             f"Data={data_loss.item():.8f}",
             f"Physics={physics_loss.item():.8f}",
             f"Alpha={alpha.item():.6f}",
-            f"LambdaData={lambda_data:.6f}",
-            f"LambdaPhysics={lambda_physics:.6f}"
+            f"LambdaData={lambda_data.item():.6f}",
+            f"LambdaPhysics={lambda_physics.item():.6f}"
         )
 
 torch.save(
     {
         "model": model.state_dict(),
-        "alpha": alpha.detach(),
-        "s_data": s_data.detach(),
-        "s_physics": s_physics.detach()
+        "alpha": alpha.detach()
     },
-    "pinn_alpha_adaptive.pt"
+    "pinn_alpha_stable.pt"
 )
 
 print("\n===================")
@@ -129,10 +125,10 @@ print(
 
 print(
     "Final Lambda Data:",
-    torch.exp(-s_data).item()
+    lambda_data.item()
 )
 
 print(
     "Final Lambda Physics:",
-    torch.exp(-s_physics).item()
+    lambda_physics.item()
 )
