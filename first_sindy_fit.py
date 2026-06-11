@@ -2,15 +2,10 @@ import numpy as np
 from sklearn.linear_model import Lasso
 
 # ==========================================
-# SELECT DATASET
+# DATASET
 # ==========================================
 
-filename = "alpha_1.5.npz"
-
-# Try:
-# filename = "alpha_0.7.npz"
-# filename = "alpha_1.0.npz"
-# filename = "alpha_1.5.npz"
+filename = "hidden_u4.npz"
 
 # ==========================================
 # LOAD DATA
@@ -25,55 +20,64 @@ ut = data["ut"]
 forcing = data["forcing"]
 
 # ==========================================
-# FLATTEN ARRAYS
+# FLATTEN
 # ==========================================
 
 u_flat = u.reshape(-1)
-
 ux_flat = ux.reshape(-1)
-
 uxx_flat = uxx.reshape(-1)
-
 ut_flat = ut.reshape(-1)
-
 f_flat = forcing.reshape(-1)
 
 # ==========================================
-# BUILD SINDY LIBRARY
+# LIBRARY
 # ==========================================
 
 Theta = np.column_stack([
 
-    np.ones_like(u_flat),     # 1
+    np.ones_like(u_flat),
 
-    u_flat,                   # u
+    u_flat,
 
-    u_flat**2,                # u^2
+    u_flat**2,
 
-    u_flat**3,                # u^3
+    u_flat**3,
 
-    ux_flat,                  # ux
+    u_flat**4,
 
-    uxx_flat,                 # uxx
+    ux_flat,
 
-    u_flat * ux_flat,         # u*ux
+    uxx_flat,
 
-    u_flat * uxx_flat,        # u*uxx
+    u_flat * ux_flat,
 
-    f_flat                    # forcing
+    f_flat
 ])
 
 terms = [
+
     "1",
+
     "u",
+
     "u^2",
+
     "u^3",
+
+    "u^4",
+
     "ux",
+
     "uxx",
+
     "u*ux",
-    "u*uxx",
+
     "forcing"
 ]
+
+# ==========================================
+# INFO
+# ==========================================
 
 print("=" * 50)
 print("Dataset:", filename)
@@ -83,7 +87,7 @@ print("Theta shape:", Theta.shape)
 print("ut shape:", ut_flat.shape)
 
 # ==========================================
-# SPARSE REGRESSION
+# FIT
 # ==========================================
 
 model = Lasso(
@@ -107,14 +111,21 @@ for term, coef in zip(
     terms,
     model.coef_
 ):
-
     print(
-        f"{term:10s} : {coef: .8f}"
+        f"{term:10s} : {coef:.8f}"
     )
 
-# ==========================================
-# TRUE PARAMETERS
-# ==========================================
+print("\nImportant Terms\n")
+
+for term, coef in zip(
+    terms,
+    model.coef_
+):
+    if abs(coef) > 1e-3:
+
+        print(
+            f"{term:10s} : {coef:.6f}"
+        )
 
 print("\nTrue Parameters\n")
 
@@ -128,15 +139,22 @@ print(
     float(data["nu"])
 )
 
-# ==========================================
-# RECONSTRUCTED PDE
-# ==========================================
+print("\nTop Terms\n")
 
-print("\nRecovered PDE\n")
-
-print(
-    f"u_t = "
-    f"{model.coef_[6]:.6f}(u*ux) + "
-    f"{model.coef_[5]:.6f}(uxx) + "
-    f"{model.coef_[8]:.6f}(forcing)"
+pairs = list(
+    zip(
+        terms,
+        model.coef_
+    )
 )
+
+pairs.sort(
+    key=lambda x: abs(x[1]),
+    reverse=True
+)
+
+for term, coef in pairs[:5]:
+
+    print(
+        f"{term:10s} : {coef:.6f}"
+    )

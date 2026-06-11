@@ -1,6 +1,7 @@
 import numpy as np
 
 from spectral import spectral_derivatives
+from residual import hidden_residual
 
 
 def forced_burgers_rhs(
@@ -24,7 +25,8 @@ def forced_burgers_rhs(
     )
 
     return (
-        -u * ux
-        + nu * uxx
-        + alpha * forcing
-    )
+    -u * ux
+    + nu * uxx
+    + alpha * forcing
+    + hidden_residual(u)
+)
