@@ -5,6 +5,8 @@ def burgers_residual(
     model,
     x,
     t,
+    forcing,
+    alpha,
     nu=0.01
 ):
 
@@ -41,6 +43,7 @@ def burgers_residual(
         u_t
         + u * u_x
         - nu * u_xx
+        - alpha * forcing
     )
 
     return residual

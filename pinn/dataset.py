@@ -6,29 +6,18 @@ from pathlib import Path
 
 def load_dataset():
 
-    # ==========================================
-    # Locate Dataset
-    # ==========================================
-
     dataset_path = (
         Path(__file__).resolve().parent.parent
-        / "datasets"
-        / "trajectory_001.npz"
+        / "alpha_0.7.npz"
     )
-
-    # ==========================================
-    # Load Data
-    # ==========================================
 
     data = np.load(dataset_path)
 
     x = data["x"]
     t = data["t"]
-    u = data["u"]
 
-    # ==========================================
-    # Create Space-Time Grid
-    # ==========================================
+    u = data["u"]
+    forcing = data["forcing"]
 
     X, T = np.meshgrid(
         x,
@@ -39,10 +28,7 @@ def load_dataset():
     T = T.reshape(-1, 1)
 
     U = u.reshape(-1, 1)
-
-    # ==========================================
-    # Random Subsampling
-    # ==========================================
+    F = forcing.reshape(-1, 1)
 
     N_samples = 10000
 
@@ -54,11 +40,9 @@ def load_dataset():
 
     X = X[idx]
     T = T[idx]
-    U = U[idx]
 
-    # ==========================================
-    # Convert To Torch
-    # ==========================================
+    U = U[idx]
+    F = F[idx]
 
     X = torch.tensor(
         X,
@@ -75,17 +59,24 @@ def load_dataset():
         dtype=torch.float32
     )
 
+    F = torch.tensor(
+        F,
+        dtype=torch.float32
+    )
+
     return (
         X,
         T,
-        U
+        U,
+        F
     )
 
 
 if __name__ == "__main__":
 
-    x, t, u = load_dataset()
+    x, t, u, f = load_dataset()
 
-    print("x:", x.shape)
-    print("t:", t.shape)
-    print("u:", u.shape)
+    print(x.shape)
+    print(t.shape)
+    print(u.shape)
+    print(f.shape)
