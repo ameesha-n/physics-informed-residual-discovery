@@ -1,3 +1,5 @@
+import numpy as np
+
 from spectral import spectral_derivatives
 
 
@@ -7,7 +9,8 @@ def forced_burgers_rhs(
     nu,
     k,
     x,
-    forcing_fn
+    forcing_fn,
+    alpha=1.0
 ):
 
     ux, uxx = spectral_derivatives(
@@ -15,7 +18,7 @@ def forced_burgers_rhs(
         k
     )
 
-    f = forcing_fn(
+    forcing = forcing_fn(
         x,
         t
     )
@@ -23,5 +26,5 @@ def forced_burgers_rhs(
     return (
         -u * ux
         + nu * uxx
-        + f
+        + alpha * forcing
     )

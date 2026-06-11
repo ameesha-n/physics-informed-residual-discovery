@@ -11,6 +11,7 @@ def generate_trajectory(
     A,
     mode,
     omega,
+    alpha=1.0,
     Nx=256,
     T=2.0,
     dt=0.001,
@@ -83,7 +84,8 @@ def generate_trajectory(
                 A=A,
                 mode=mode,
                 omega=omega
-            )
+            ),
+            alpha=alpha
         )
 
     # ==========================================
@@ -93,8 +95,6 @@ def generate_trajectory(
     t = 0.0
 
     for n in range(Nt):
-
-        # Current derivatives
 
         ux, uxx = spectral_derivatives(
             u,
@@ -207,6 +207,5 @@ def generate_trajectory(
 
         "nu": nu,
 
-        # mentor suggestion
-        "alpha": 1.0
+        "alpha": alpha
     }
