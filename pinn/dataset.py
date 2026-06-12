@@ -8,7 +8,7 @@ def load_dataset():
 
     dataset_path = (
         Path(__file__).resolve().parent.parent
-        / "alpha_0.7.npz"
+        / "alpha_0.3.npz"
     )
 
     data = np.load(dataset_path)

@@ -5,7 +5,7 @@ import torch
 # DATASET
 # ==========================================
 
-filename = "alpha_1.5.npz"
+filename = "alpha_1.0.npz"
 
 # try later:
 # alpha_0.7.npz

@@ -12,6 +12,7 @@ def generate_trajectory(
     mode,
     omega,
     alpha=1.0,
+    include_hidden_residual=False,
     Nx=256,
     T=2.0,
     dt=0.001,
@@ -56,13 +57,25 @@ def generate_trajectory(
     # Storage
     # ==========================================
 
-    solution = np.zeros((Nt + 1, Nx))
+    solution = np.zeros(
+        (Nt + 1, Nx)
+    )
 
-    ux_storage = np.zeros((Nt + 1, Nx))
-    uxx_storage = np.zeros((Nt + 1, Nx))
-    ut_storage = np.zeros((Nt + 1, Nx))
+    ux_storage = np.zeros(
+        (Nt + 1, Nx)
+    )
 
-    forcing_storage = np.zeros((Nt + 1, Nx))
+    uxx_storage = np.zeros(
+        (Nt + 1, Nx)
+    )
+
+    ut_storage = np.zeros(
+        (Nt + 1, Nx)
+    )
+
+    forcing_storage = np.zeros(
+        (Nt + 1, Nx)
+    )
 
     solution[0] = u
 
@@ -85,7 +98,8 @@ def generate_trajectory(
                 mode=mode,
                 omega=omega
             ),
-            alpha=alpha
+            alpha=alpha,
+            include_hidden_residual=include_hidden_residual
         )
 
     # ==========================================
@@ -120,7 +134,9 @@ def generate_trajectory(
 
         forcing_storage[n] = f
 
+        # ======================================
         # RK4 Step
+        # ======================================
 
         u = rk4_step(
             u,
@@ -134,20 +150,28 @@ def generate_trajectory(
         # ======================================
 
         if np.isnan(u).any():
+
             raise ValueError(
-                f"NaN detected at step={n}, t={t:.6f}"
+                f"NaN detected at step={n}, "
+                f"t={t:.6f}"
             )
 
         if np.isinf(u).any():
+
             raise ValueError(
-                f"Inf detected at step={n}, t={t:.6f}"
+                f"Inf detected at step={n}, "
+                f"t={t:.6f}"
             )
 
-        max_u = np.max(np.abs(u))
+        max_u = np.max(
+            np.abs(u)
+        )
 
         if max_u > 100:
+
             raise ValueError(
-                f"Explosion detected at step={n}, "
+                f"Explosion detected "
+                f"at step={n}, "
                 f"t={t:.6f}, "
                 f"max_u={max_u:.6f}"
             )
@@ -157,7 +181,7 @@ def generate_trajectory(
         t += dt
 
     # ==========================================
-    # Store Final State
+    # Final State
     # ==========================================
 
     ux, uxx = spectral_derivatives(
@@ -207,5 +231,8 @@ def generate_trajectory(
 
         "nu": nu,
 
-        "alpha": alpha
+        "alpha": alpha,
+
+        "include_hidden_residual":
+        include_hidden_residual
     }

@@ -11,7 +11,8 @@ def forced_burgers_rhs(
     k,
     x,
     forcing_fn,
-    alpha=1.0
+    alpha=1.0,
+    include_hidden_residual=False
 ):
 
     ux, uxx = spectral_derivatives(
@@ -24,9 +25,16 @@ def forced_burgers_rhs(
         t
     )
 
-    return (
-    -u * ux
-    + nu * uxx
-    + alpha * forcing
-    + hidden_residual(u)
-)
+    rhs = (
+        -u * ux
+        + nu * uxx
+        + alpha * forcing
+    )
+
+    if include_hidden_residual:
+
+        rhs += hidden_residual(
+            u
+        )
+
+    return rhs
